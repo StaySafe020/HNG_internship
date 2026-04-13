@@ -1,6 +1,8 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+let serverless = null;
+try { serverless = require('serverless-http'); } catch (e) { /* ignore for local dev */ }
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -117,4 +119,14 @@ app.use((req, res) => {
 
 
 // Export for Vercel serverless deployment
-module.exports = app;
+if (serverless) {
+    module.exports = serverless(app);
+} else {
+    // Local dev: start server
+    if (require.main === module) {
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    }
+    module.exports = app;
+}
